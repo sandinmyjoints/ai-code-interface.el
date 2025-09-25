@@ -1,0 +1,6 @@
+
+* Release history
+
+** Main branch change
+
+- Feat: add resume functionality for CLI sessions across backends, by ileixe 
