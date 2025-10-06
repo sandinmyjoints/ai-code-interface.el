@@ -15,5 +15,6 @@
 - Feat: Add MCP debug command and customizable run options for Python files
 - Chore: Enhance AI shell command input to support file name expansion in dired mode
 - Chore (inspector): migrate to eshell for improved command handling
+- Feat: Add menu item to upgrade backend AI CLI tools
 - Chore: Update .gitignore with AI Code entries
 - Feat: generate python MCP config (json / toml)
