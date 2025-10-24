@@ -150,9 +150,6 @@ Shows the current backend label to the right."
     ]
    ])
 
-;;;###autoload
-(global-set-key (kbd "C-c a") #'ai-code-menu)
-
 ;; When in a special buffer (e.g., *claude-code*) and using evil-mode,
 ;; pressing SPC in normal state will send the prompt.
 
