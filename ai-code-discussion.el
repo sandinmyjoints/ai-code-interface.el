@@ -18,6 +18,10 @@
 (declare-function ai-code--insert-prompt "ai-code-prompt-mode")
 (declare-function ai-code--get-clipboard-text "ai-code-interface")
 (declare-function ai-code-call-gptel-sync "ai-code-prompt-mode")
+(declare-function magit-toplevel "magit" (&optional dir))
+(declare-function ai-code--format-repo-context-info "ai-code-file")
+
+(defvar ai-code--repo-context-info)
 
 ;;;###autoload
 (defun ai-code-ask-question (arg)
@@ -71,12 +75,14 @@ CLIPBOARD-CONTEXT is optional clipboard text to append as context."
                         (file-at-point (format "Question about %s: " (file-name-nondirectory file-at-point)))
                         (t "General question about directory: ")))
          (question (ai-code-read-string prompt-label ""))
+         (repo-context-string (ai-code--format-repo-context-info))
          (final-prompt (concat question
-                              files-context-string
-                              (when (and clipboard-context
-                                        (string-match-p "\\S-" clipboard-context))
-                                (concat "\n\nClipboard context:\n" clipboard-context))
-                              "\nNote: This is a question only - please do not modify the code.")))
+                               files-context-string
+                               repo-context-string
+                               (when (and clipboard-context
+                                          (string-match-p "\\S-" clipboard-context))
+                                 (concat "\n\nClipboard context:\n" clipboard-context))
+                               "\nNote: This is a question only - please do not modify the code.")))
     (ai-code--insert-prompt final-prompt)))
 
 (defun ai-code--ask-question-file (clipboard-context)
@@ -118,6 +124,7 @@ CLIPBOARD-CONTEXT is optional clipboard text to append as context."
            (t "General question: ")))
          (question (ai-code-read-string prompt-label ""))
          (files-context-string (ai-code--get-context-files-string))
+         (repo-context-string (ai-code--format-repo-context-info))
          (final-prompt
           (concat question
                   (when region-text
@@ -128,8 +135,9 @@ CLIPBOARD-CONTEXT is optional clipboard text to append as context."
                   (when function-name
                     (format "\nFunction: %s" function-name))
                   files-context-string
+                  repo-context-string
                   (when (and clipboard-context
-                            (string-match-p "\\S-" clipboard-context))
+                             (string-match-p "\\S-" clipboard-context))
                     (concat "\n\nClipboard context:\n" clipboard-context))
                   (if region-text
                       "\nNote: This is a question about the selected region - please do not modify the code."
@@ -187,6 +195,7 @@ Argument ARG is the prefix argument."
                                 (buffer-substring-no-properties (point-min) (point-max))))
          (function-name (which-function))
          (files-context-string (ai-code--get-context-files-string))
+         (repo-context-string (ai-code--format-repo-context-info))
          (context-section
           (if full-buffer-context
               (concat "\n\nContext:\n" full-buffer-context)
@@ -225,6 +234,7 @@ Argument ARG is the prefix argument."
                   context-section
                   (when function-name (format "\nFunction: %s" function-name))
                   files-context-string
+                  repo-context-string
                   (concat "\n\nNote: Please focus on how to fix the error. Your response should include:\n"
                           "1. A brief explanation of the root cause of the error.\n"
                           "2. A code snippet with the fix.\n"

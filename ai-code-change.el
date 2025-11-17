@@ -22,6 +22,7 @@
 (declare-function ai-code--get-clipboard-text "ai-code-interface")
 (declare-function ai-code--get-git-relative-paths "ai-code-discussion")
 (declare-function ai-code--get-region-location-info "ai-code-discussion")
+(declare-function ai-code--format-repo-context-info "ai-code-file")
 
 (defun ai-code--is-comment-line (line)
   "Check if LINE is a comment line based on current buffer's comment syntax.
@@ -121,6 +122,7 @@ Argument ARG is the prefix argument."
            (t "Change code: ")))
          (initial-prompt (ai-code-read-string prompt-label ""))
          (files-context-string (ai-code--get-context-files-string))
+         (repo-context-string (ai-code--format-repo-context-info))
          (final-prompt
           (concat initial-prompt
                   (when region-text
@@ -133,6 +135,7 @@ Argument ARG is the prefix argument."
                             region-text))
                   (when function-name (format "\nFunction: %s" function-name))
                   files-context-string
+                  repo-context-string
                   (when (and clipboard-context
                             (string-match-p "\\S-" clipboard-context))
                     (concat "\n\nClipboard context:\n" clipboard-context))
@@ -169,14 +172,28 @@ Argument ARG is the prefix argument."
                            (region-end))))
            (region-start-line (when region-active
                                 (line-number-at-pos (region-beginning))))
+           (region-location-info (when region-active
+                                   (ai-code--get-region-location-info
+                                    (region-beginning)
+                                    (region-end))))
+           (region-location-line (when region-text
+                                    (or (and region-location-info
+                                             (format "Selected region: %s"
+                                                     region-location-info))
+                                        (when region-start-line
+                                          (format "Selected region starting on line %d"
+                                                  region-start-line)))))
            (files-context-string (ai-code--get-context-files-string))
            (initial-input
             (if arg
                 ;; With prefix argument: implement after comment, not in-place
                 (cond
                  (region-text
-                  (format "Please implement code after this requirement comment block starting on line %d: '%s'. Leave the comment as-is and add the implementation code after it. Keep the existing code structure and add the implementation after this specific block.%s%s"
-                          region-start-line region-text function-context files-context-string))
+                  (format (concat
+                           "Please implement code after this requirement comment block in the selected region. "
+                           "Leave the comment as-is and add the implementation code after it. "
+                           "Keep the existing code structure and add the implementation after this specific block.\n%s\n%s%s%s")
+                          region-location-line region-text function-context files-context-string))
                  (is-comment
                   (format "Please implement code after this requirement comment on line %d: '%s'. Leave the comment as-is and add the implementation code after it. Keep the existing code structure and add the implementation after this specific comment.%s%s"
                           current-line-number current-line function-context files-context-string))
@@ -189,8 +206,11 @@ Argument ARG is the prefix argument."
               ;; Without prefix argument: replace in-place (original behavior)
               (cond
                (region-text
-                (format "Please implement this requirement comment block starting on line %d in-place: '%s'. It is already inside current code. Please replace it with implementation. Keep the existing code structure and implement just this specific block.%s%s"
-                        region-start-line region-text function-context files-context-string))
+                (format (concat
+                         "Please implement this requirement comment block in-place within the selected region. "
+                         "It is already inside current code. Please replace it with implementation. "
+                         "Keep the existing code structure and implement just this specific block.\n%s\n%s%s%s")
+                        region-location-line region-text function-context files-context-string))
                (is-comment
                 (format "Please implement this requirement comment on line %d in-place: '%s'. It is already inside current code. Please replace it with implementation. Keep the existing code structure and implement just this specific comment.%s%s"
                         current-line-number current-line function-context files-context-string))
