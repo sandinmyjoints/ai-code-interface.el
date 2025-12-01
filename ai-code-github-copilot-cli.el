@@ -31,12 +31,17 @@
   :type 'string
   :group 'ai-code-github-copilot-cli)
 
+(defcustom github-copilot-cli-program-switches nil
+  "Command line switches to pass to GitHub Copilot CLI on startup."
+  :type '(repeat string)
+  :group 'ai-code-github-copilot-cli)
+
 ;;;###autoload
 (defun github-copilot-cli (&optional arg)
   "Start Github Copilot CLI (reuses `claude-code' startup logic)."
   (interactive "P")
   (let ((claude-code-program github-copilot-cli-program) ; override dynamically
-        (claude-code-program-switches nil))         ; optional e.g.: '("exec" "--non-interactive")
+        (claude-code-program-switches github-copilot-cli-program-switches))
     (claude-code arg)))
 
 ;;;###autoload
@@ -68,7 +73,7 @@ With double prefix ARG (\\[universal-argument] \\[universal-argument]),
 prompt for the project directory."
   (interactive "P")
   (let ((claude-code-program github-copilot-cli-program)
-        (claude-code-program-switches nil)
+        (claude-code-program-switches github-copilot-cli-program-switches)
         (extra-switches '("--resume")))
     (claude-code--start arg extra-switches nil t)
     ;; Send empty string to trigger terminal processing and ensure CLI session picker appears

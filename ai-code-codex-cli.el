@@ -26,12 +26,17 @@
   :type 'string
   :group 'ai-code-codex-cli)
 
+(defcustom codex-cli-program-switches nil
+  "Command line switches to pass to Codex CLI on startup."
+  :type '(repeat string)
+  :group 'ai-code-codex-cli)
+
 ;;;###autoload
 (defun codex-cli (&optional arg)
   "Start Codex (reuses `claude-code' startup logic)."
   (interactive "P")
   (let ((claude-code-program codex-cli-program) ; override dynamically
-        (claude-code-program-switches nil))         ; optional e.g.: '("exec" "--non-interactive")
+        (claude-code-program-switches codex-cli-program-switches))
     (claude-code arg)))
 
 ;;;###autoload
@@ -52,7 +57,7 @@ When called from Lisp code, sends LINE directly without prompting."
   "Resume a previous Codex CLI session."
   (interactive "P")
   (let ((claude-code-program codex-cli-program)
-        (claude-code-program-switches nil))
+        (claude-code-program-switches codex-cli-program-switches))
     (claude-code--start arg '("resume") nil t)
     (claude-code--term-send-string claude-code-terminal-backend "")
     (with-current-buffer claude-code-terminal-backend

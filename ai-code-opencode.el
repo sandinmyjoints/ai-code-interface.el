@@ -28,12 +28,17 @@
   :type 'string
   :group 'ai-code-opencode)
 
+(defcustom opencode-program-switches nil
+  "Command line switches to pass to Opencode on startup."
+  :type '(repeat string)
+  :group 'ai-code-opencode)
+
 ;;;###autoload
 (defun opencode (&optional arg)
   "Start Opencode (reuses `claude-code' startup logic)."
   (interactive "P")
   (let ((claude-code-program opencode-program) ; override dynamically
-        (claude-code-program-switches nil))    ; optional e.g.: '("exec" "--non-interactive")
+        (claude-code-program-switches opencode-program-switches))
     (claude-code arg)))
 
 ;;;###autoload
@@ -62,7 +67,7 @@ With double prefix ARG (\\[universal-argument] \\[universal-argument]),
 prompt for the project directory."
   (interactive "P")
   (let ((claude-code-program opencode-program)
-        (claude-code-program-switches nil))
+        (claude-code-program-switches opencode-program-switches))
     (claude-code--start arg '("resume") nil t)
     (claude-code--term-send-string claude-code-terminal-backend "")
     (with-current-buffer claude-code-terminal-backend
