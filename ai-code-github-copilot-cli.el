@@ -28,6 +28,12 @@
   :type '(repeat string)
   :group 'ai-code-github-copilot-cli)
 
+(defcustom ai-code-github-copilot-cli-env-vars nil
+  "Environment variables to set when running GitHub Copilot CLI.
+Each element should be a string in the format \"VAR=value\"."
+  :type '(repeat string)
+  :group 'ai-code-github-copilot-cli)
+
 (defconst ai-code-github-copilot-cli--session-prefix "copilot"
   "Session prefix used in GitHub Copilot CLI buffer names.")
 
@@ -56,7 +62,8 @@ With prefix ARG, prompt for CLI args using
      nil
      nil
      ai-code-github-copilot-cli--session-prefix
-     nil)))
+     nil
+     ai-code-github-copilot-cli-env-vars)))
 
 ;;;###autoload
 (defun ai-code-github-copilot-cli-switch-to-buffer (&optional force-prompt)
